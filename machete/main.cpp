@@ -83,8 +83,8 @@ int main(int argc, char* argv[]) {
                         }
                 }
         }
-        printf("\n");
-        printf("Machete compression ratio: %d\n", machete_ori_len * 2.0 / machete_cmp_len);
+        printf("Test finished                                    \n");
+        printf("Machete compression ratio: %lf\n", machete_ori_len * 2.0 / machete_cmp_len);
         printf("Machete compression speed: %lf MiB/s\n", machete_ori_len * 8.0 * CLOCKS_PER_SEC / 1024 / 1024 / machete_encode_time);
         printf("Machete decompression speed: %lf MiB/s\n", machete_ori_len * 8.0 * CLOCKS_PER_SEC / 1024/ 1024 / machete_decode_time);
         printf("Machete maximum error: %.20lf\n", machete_max_err);

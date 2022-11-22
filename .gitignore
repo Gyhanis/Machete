@@ -1,3 +1,7 @@
+init
+bin/
+lib/
 machete/lib
 machete/obj
-init
+machete/mach
+gorilla/gorilla

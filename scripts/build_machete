@@ -1,7 +1,0 @@
-#! /bin/bash
-
-cd machete
-mkdir -p lib obj bin
-make -B 
-cp lib/* ../lib/
-cp mach ../bin/

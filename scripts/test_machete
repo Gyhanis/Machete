@@ -1,9 +1,0 @@
-#! /bin/bash
-
-if [[ $# == 0 ]] 
-then 
-        bin/mach data/bin/sample 5E-3 1000
-elif [[ $# < 3 ]] 
-then 
-        echo no enough parameters
-fi
