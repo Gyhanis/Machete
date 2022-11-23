@@ -8,3 +8,15 @@ go build
 cd ../query 
 go build 
 cd ../..
+
+cd influxdb
+for ver in void ori sz mach 
+do 
+        git checkout $ver 
+        make 
+        cp bin/linux/influxd ../bin/influxd-$ver 
+
+        git checkout $ver-nc 
+        make 
+        cp bin/linux/influxd ../bin/influxd-$ver-nc
+done 

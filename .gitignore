@@ -1,7 +1,8 @@
 init
 bin/*
 !bin/chimptest.jar
-lib/
+lib/*
+!lib/libSZ.so
 machete/lib
 machete/obj
 machete/mach
