@@ -11,6 +11,8 @@ import (
 	db "github.com/influxdata/influxdb-client-go/v2"
 )
 
+const token string = "access token here"
+
 const max_thread_cnt = 32
 const query_cnt = 100000
 
@@ -27,23 +29,17 @@ var query_list chan (string)
 // var valid_query chan (string)
 
 func query_thread() {
-	client := db.NewClient("http://localhost:8086", "LpIK5qpW7hnf0TjznaWRlALUxSwqM54hxvVBvukABe5w1R-_DovO9ws9UMt5wroQY8lGOK1SBK7kfUlquO0bZA==")
+	client := db.NewClient("http://localhost:8086", token)
 	defer client.Close()
 	querier := client.QueryAPI("test")
 	rep := report{0, 0}
-	// file, _ := os.Create("Result_len")
-	// defer file.Close()
 	for {
 		query, ok := <-query_list
 		if !ok {
 			thread_report <- rep
 			return
 		}
-		// fmt.Println(query)
-		// start := time.Now()
 		result, err := querier.QueryRaw(context.Background(), query, db.DefaultDialect())
-		// dur := time.Since(start)
-		// fmt.Print(result)
 		if err != nil {
 			thread_report <- report{-1, -1}
 			return
@@ -75,9 +71,8 @@ func check_err(e error) {
 }
 
 // os.Args[1] thread_cnt
-// os.Args[2] write data dir
-// os.Args[3] query data file
-// os.Args[4] output dir
+// os.Args[2] query data file
+// os.Args[3] output dir
 
 func main() {
 	thread_count, err := strconv.Atoi(os.Args[1])
@@ -87,23 +82,20 @@ func main() {
 		os.Exit(1)
 	}
 
-	query_file, err := os.Open(os.Args[3])
-	// query_file, err := os.Open("/home/sy/tstest3/tmp_query")
+	query_file, err := os.Open(os.Args[2])
 	check_err(err)
 
 	scan := bufio.NewScanner(query_file)
 	query_list = make(chan string, query_cnt+1)
-	// fmt.Println("Loading queries")
 	for scan.Scan() {
 		query_list <- scan.Text()
 	}
-	// fmt.Println("Queries Loaded")
 	query_file.Close()
 	close(query_list)
 
-	fqlat, err := os.Create(path.Join(os.Args[4], "query_latency"))
+	fqlat, err := os.Create(path.Join(os.Args[3], "query_latency"))
 	check_err(err)
-	fqcnt, err := os.Create(path.Join(os.Args[4], "query_count"))
+	fqcnt, err := os.Create(path.Join(os.Args[3], "query_count"))
 	check_err(err)
 
 	thread_report = make(chan report, thread_count)
@@ -118,7 +110,6 @@ func main() {
 	working_threads := thread_count
 	time_consumed := float64(0)
 	query_processed := 0
-	// fmt.Printf("Hello?\n")
 query_listening:
 	for {
 		select {
@@ -140,11 +131,11 @@ query_listening:
 			if working_threads == 0 {
 				fqlat.Close()
 				fqcnt.Close()
-				write_file(time_consumed, path.Join(os.Args[4], "query_time"))
+				write_file(time_consumed, path.Join(os.Args[3], "query_time"))
 				break query_listening
 			}
 		}
 	}
-	fmt.Fprintf(os.Stderr, "\n")
+	fmt.Printf("Query finished in %v seconds\n", float64(time_consumed)/1000/1000)
 	fmt.Printf("Job done\n")
 }

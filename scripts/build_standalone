@@ -3,9 +3,6 @@
 [ -v cc ] || cc=gcc
 [ -v cxx ] || cxx=g++
 
-#fetch submodules
-git submodule init
-
 #build machete
 cd machete
 mkdir -p lib obj bin
@@ -14,18 +11,10 @@ cp lib/* ../lib/
 cp mach ../bin/
 cd .. 
 
-#build SZ
-cd SZ
-git checkout v2.1.12
-mkdir -p build
-cd build
-cmake ..
-cmake --build .
-cp sz/libSZ.so ../../lib/
-cd ../..
+#build SZ test
 $cxx other/test_sz.cpp -o bin/sztest -Llib -lSZ 
 
-#build Gorilla
+#build Gorilla test
 cd gorilla
 go build 
 cp gorilla ../bin/gorilla 

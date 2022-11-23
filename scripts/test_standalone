@@ -2,11 +2,19 @@
 
 if [[ $# == 0 ]] 
 then 
-        # bin/mach data/bin/sample 5E-3 1000
-        # bin/sztest data/bin/sample 5E-3 1000
-        # bin/gorilla data/bin/sample 0 1000
+        bin/mach data/bin/sample 5E-3 1000
+        bin/sztest data/bin/sample 5E-3 1000
+        bin/gorilla data/bin/sample 0 1000
         java -jar bin/chimptest.jar data/bin/sample 0 1000
 elif [[ $# < 3 ]] 
 then 
         echo no enough parameters
-fi
+        echo arg1: data directory
+        echo "arg2: error bound (only valid for Machete and SZ)"
+        echo arg3: slice size
+else 
+        bin/mach $1 $2 $3
+        bin/sztest $1 $2 $3
+        bin/gorilla $1 $2 $3
+        java -jar bin/chimptest.jar $1 $2 $3
+fi 

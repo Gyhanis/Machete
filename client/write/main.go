@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"os/exec"
 	"path"
 	"strconv"
 	"strings"
@@ -14,6 +13,8 @@ import (
 	db "github.com/influxdata/influxdb-client-go/v2"
 	db_w "github.com/influxdata/influxdb-client-go/v2/api/write"
 )
+
+const token string = "access token here"
 
 const max_thread_cnt = 32
 const batch_size = 1000
@@ -27,7 +28,6 @@ var thread_report chan (report)
 var latency_report chan (int64)
 
 func recordToPoint(r string) *db_w.Point {
-	// fmt.Printf("Parsing %v\n", r)
 	sections := strings.Split(r, " ")
 	parts := strings.Split(sections[0], ",")
 	measurement := parts[0]
@@ -52,21 +52,18 @@ func recordToPoint(r string) *db_w.Point {
 }
 
 func write_thread() {
-	client := db.NewClient("http://localhost:8086", "LpIK5qpW7hnf0TjznaWRlALUxSwqM54hxvVBvukABe5w1R-_DovO9ws9UMt5wroQY8lGOK1SBK7kfUlquO0bZA==")
+	client := db.NewClient("http://localhost:8086", token)
 	defer client.Close()
 	writer := client.WriteAPIBlocking("test", "test")
 
 	var rep report
-	// data := make([]string, 0, batch_size)
 	points := make([]*db_w.Point, 0, batch_size)
 	for {
-		// fmt.Println("Acquiring file")
 		fileName, ok := <-file_list
 		if !ok {
 			thread_report <- rep
 			return
 		}
-		// fmt.Println("Writing file: ", fileName)
 		file, err := os.Open(fileName)
 		if err != nil {
 			thread_report <- report{-1}
@@ -86,9 +83,7 @@ func write_thread() {
 			if len(points) == 0 {
 				break
 			}
-			// fmt.Printf("writing batch of size %v\n", len(points))
 			start := time.Now()
-			// err := writer.WriteRecord(context.Background(), line)
 			err := writer.WritePoint(context.Background(), points...)
 			dur := time.Since(start)
 			if err != nil {
@@ -116,8 +111,7 @@ func check_err(e error) {
 
 // os.Args[1] thread_cnt
 // os.Args[2] write data dir
-// os.Args[3] query data file
-// os.Args[4] output dir
+// os.Args[3] output dir
 
 func main() {
 	thread_count, err := strconv.Atoi(os.Args[1])
@@ -144,7 +138,7 @@ func main() {
 	defer close(thread_report)
 	latency_report = make(chan int64, thread_count)
 	defer close(latency_report)
-	fwlat, err := os.Create(path.Join(os.Args[4], "write_latency"))
+	fwlat, err := os.Create(path.Join(os.Args[3], "write_latency"))
 	check_err(err)
 
 	time_consumed := int64(0)
@@ -171,7 +165,7 @@ write_listening:
 		default:
 			if working_threads == 0 {
 				fwlat.Close()
-				write_file(time_consumed, path.Join(os.Args[4], "write_time"))
+				write_file(time_consumed, path.Join(os.Args[3], "write_time"))
 				break write_listening
 			}
 		}
@@ -179,17 +173,17 @@ write_listening:
 	fmt.Printf("Write finished in %v seconds\n", float64(time_consumed)/1000/1000)
 
 	// fmt.Println("Calling backup")
-	cmd := exec.Command("influx", "backup", "--bucket", "test", "backup")
-	cmd.Dir = "/home/sy/tstest3"
-	out_file, err := os.Create("backup_log")
-	check_err(err)
-	cmd.Stderr = out_file
-	cmd.Stdout = out_file
-	start := time.Now()
-	err = cmd.Run()
-	dur := time.Since(start)
-	check_err(err)
-	out_file.Close()
-	write_file(dur.Microseconds(), path.Join(os.Args[4], "backup_time"))
-	fmt.Printf("Backup finished in %v seconds\n", dur.Seconds())
+	// cmd := exec.Command("influx", "backup", "--bucket", "test", "backup")
+	// cmd.Dir = "/home/sy/tstest3"
+	// out_file, err := os.Create("backup_log")
+	// check_err(err)
+	// cmd.Stderr = out_file
+	// cmd.Stdout = out_file
+	// start := time.Now()
+	// err = cmd.Run()
+	// dur := time.Since(start)
+	// check_err(err)
+	// out_file.Close()
+	// write_file(dur.Microseconds(), path.Join(os.Args[4], "backup_time"))
+	// fmt.Printf("Backup finished in %v seconds\n", dur.Seconds())
 }
