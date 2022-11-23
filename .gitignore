@@ -1,7 +1,12 @@
 init
-bin/
+bin/*
+!bin/chimptest.jar
 lib/
 machete/lib
 machete/obj
 machete/mach
 gorilla/gorilla
+
+client/go.sum
+client/query/query
+client/write/write 
