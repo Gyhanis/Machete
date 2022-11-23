@@ -4,7 +4,8 @@ if [[ $# == 0 ]]
 then 
         # bin/mach data/bin/sample 5E-3 1000
         # bin/sztest data/bin/sample 5E-3 1000
-        bin/gorilla data/bin/sample 0 1000
+        # bin/gorilla data/bin/sample 0 1000
+        java -jar bin/chimptest.jar data/bin/sample 0 1000
 elif [[ $# < 3 ]] 
 then 
         echo no enough parameters
