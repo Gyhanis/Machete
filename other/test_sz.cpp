@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include <float.h>
 #include <math.h>
-#include "../SZ/sz/include/sz.h"
+#include "../SZ/sz.h"
 
 #include <stdio.h>
 #include <stdlib.h>
