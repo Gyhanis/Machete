@@ -1,4 +1,0 @@
-ThreadCount: 8
-ErrorBound: 5E-4
-BLFile: block_len
-TimingFile: timing

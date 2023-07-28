@@ -1,3 +1,0 @@
-#! /bin/bash 
-rm -rf ./engine
-LD_LIBRARY_PATH=lib bin/influxd-$1 --engine-path=./engine
