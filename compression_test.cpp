@@ -5,26 +5,9 @@
 #include <dirent.h>
 
 #include "machete/machete.h"
-
-int debug;
-
-enum ListError {
-        SKIP = -2,
-        EOL,
-};
-
-extern int compressor_list[];
-
-enum Type {Lossy, Lossless};
-
-typedef struct {
-        uint64_t ori_size;
-        uint64_t cmp_size;
-        uint64_t cmp_time;
-        uint64_t dec_time;
-} Perf;
-
-Perf empty = {0,0,0,0};
+#include "LFZip/lfzip.h"
+#include "Gorilla/gorilla.h"
+#include "Chimp/chimp.h"
 
 extern "C" {
         int zfp_compress_wrapper(double* in, size_t len, uint8_t** out, double error);
@@ -38,6 +21,26 @@ int zlib_decompress(uint8_t* in, size_t len, double* out, double error);
 int zstd_compress(double* in, size_t len, uint8_t** out, double error);
 int zstd_decompress(uint8_t* in, size_t len, double* out, double error);
 
+enum ListError {
+        SKIP = -2,
+        EOL,
+};
+
+enum Type {Lossy, Lossless};
+
+typedef struct {
+        uint64_t ori_size;
+        uint64_t cmp_size;
+        uint64_t cmp_time;
+        uint64_t dec_time;
+} Perf;
+
+Perf empty = {0,0,0,0};
+
+/*********************************************************************
+ *                      Evaluation Settings 
+*********************************************************************/
+// Available compressors
 struct {
         char name[16];
         Type type;
@@ -47,16 +50,17 @@ struct {
 } compressors[] = {
         { "Zlib",       Type::Lossless, zlib_compress,  zlib_decompress,        empty },        //0
         { "ZSTD",       Type::Lossless, zstd_compress,  zstd_decompress,        empty },
-        // // { "Gorilla",    Type::Lossless, gorilla_encode, gorilla_decode,         empty },
-        // // { "Chimp",      Type::Lossless, chimp_encode,   chimp_decode,           empty },        //3
-        // // { "LFZip",      Type::Lossy,    lfzip_compress, lfzip_decompress,       empty },
-        { "SZ",         Type::Lossy,   sz_compress,    sz_decompress,          empty },
-        { "ZFP",        Type::Lossy,    zfp_compress_wrapper, zfp_decompress_wrapper, empty},  
-        { "Machete",   Type::Lossy,    machete_compress_huffman<HuffmanEnc>,   machete_decompress_huffman<HuffmanDec>, empty},
-        { "MacheteP",  Type::Lossy,    machete_compress_huffman<HuffmanPEnc>,  machete_decompress_huffman<HuffmanPDec>, empty},
-        { "MachetePC", Type::Lossy,    machete_compress_huffman<HuffmanPCEnc>, machete_decompress_huffman<HuffmanPCDec>, empty},
+        { "Gorilla",    Type::Lossless, gorilla_encode, gorilla_decode,         empty },
+        { "Chimp",      Type::Lossless, chimp_encode,   chimp_decode,           empty },        //3
+        { "LFZip",      Type::Lossy,    lfzip_compress, lfzip_decompress,       empty },
+        { "SZ",         Type::Lossy,    sz_compress,    sz_decompress,          empty },        
+        { "ZFP",        Type::Lossy,    zfp_compress_wrapper, zfp_decompress_wrapper, empty},   //6
+        { "Machete",    Type::Lossy,    machete_compress_huffman<HuffmanEnc>,   machete_decompress_huffman<HuffmanDec>, empty},
+        { "MacheteP",   Type::Lossy,    machete_compress_huffman<HuffmanPEnc>,  machete_decompress_huffman<HuffmanPDec>, empty},
+        { "MachetePC",  Type::Lossy,    machete_compress_huffman<HuffmanPCEnc>, machete_decompress_huffman<HuffmanPCDec>, empty},
 };
 
+// Available datasets
 struct {
         char name[16];
         const char* path;
@@ -69,9 +73,14 @@ struct {
         { "System",     "./example_data/System/bin"   , 1E-3},
 };
 
-int compressor_list[] = {0,1,2,3,4,EOL};
-int dataset_list[] = {3,EOL};
-int bsize_list[] = {2000, EOL};
+// List of compressors to be evaluated
+int compressor_list[] = {0,1,2,3,4,5,6,7,8,9,EOL};
+// List of datasets to be evaluated 
+int dataset_list[] = {4,EOL};
+// List of slice lengths to be evaluated
+int bsize_list[] = {1000, 2000, EOL};
+
+///////////////////////// Setting End ////////////////////////////
 
 
 int check(double *d0, double *d1, size_t len, double error) {
@@ -234,7 +243,7 @@ void report(int c) {
 }
 
 int main() {
-        // lfzip_init();
+        lfzip_init();
 
         double data[1000];
         uint8_t* cmp;
