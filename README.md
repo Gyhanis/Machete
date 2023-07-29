@@ -41,4 +41,4 @@ In other words, the data file should be written in a way like:
 
 * Machete: a novel lossy compressor 
 * Gorilla: a fast lossless time series database compressor
-* Chimp~1~: 
+* Chimp$_{128}$: 
