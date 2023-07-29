@@ -20,13 +20,13 @@ libmach:
 
 
 wrappers.o: wrappers.cpp 
-	g++ -c ${CFLAG} -o $@ $< 
+	g++ -c ${CFLAG} -Iinc/zfp -o $@ $< 
 
-compression_test: compression_test.o lib\libmach.a
-	g++ -o $@ compression_test.o $(CFLAG) \
-		-Llib -lmach\
+compression_test: compression_test.o wrappers.o lib\libmach.a
+	g++ -o $@ compression_test.o wrappers.o $(CFLAG) \
+		-Llib -lmach -lzfp -lzstd -lz -fopenmp
 
 clean:
 	rm -f *.o tmp.cmp compression_test 
+	rm -f lib/libmach.a 
 	cd machete; make clean 
-	

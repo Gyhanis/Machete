@@ -45,13 +45,13 @@ struct {
         int (*decompress) (uint8_t* in, size_t len, double* out, double error);
         Perf perf;
 } compressors[] = {
-        // { "Zlib",       Type::Lossless, zlib_compress,  zlib_decompress,        empty },        //0
-        // { "ZSTD",       Type::Lossless, zstd_compress,  zstd_decompress,        empty },
+        { "Zlib",       Type::Lossless, zlib_compress,  zlib_decompress,        empty },        //0
+        { "ZSTD",       Type::Lossless, zstd_compress,  zstd_decompress,        empty },
         // // { "Gorilla",    Type::Lossless, gorilla_encode, gorilla_decode,         empty },
         // // { "Chimp",      Type::Lossless, chimp_encode,   chimp_decode,           empty },        //3
         // // { "LFZip",      Type::Lossy,    lfzip_compress, lfzip_decompress,       empty },
-        // { "SZ",         Type::Lossy,   sz_compress,    sz_decompress,          empty },
-        // { "ZFP",        Type::Lossy,    zfp_compress_wrapper, zfp_decompress_wrapper, empty},   //6
+        { "SZ",         Type::Lossy,   sz_compress,    sz_decompress,          empty },
+        { "ZFP",        Type::Lossy,    zfp_compress_wrapper, zfp_decompress_wrapper, empty},  
         { "Machete",   Type::Lossy,    machete_compress_huffman<HuffmanEnc>,   machete_decompress_huffman<HuffmanDec>, empty},
         { "MacheteP",  Type::Lossy,    machete_compress_huffman<HuffmanPEnc>,  machete_decompress_huffman<HuffmanPDec>, empty},
         { "MachetePC", Type::Lossy,    machete_compress_huffman<HuffmanPCEnc>, machete_decompress_huffman<HuffmanPCDec>, empty},
@@ -69,9 +69,9 @@ struct {
         { "System",     "./example_data/System/bin"   , 1E-3},
 };
 
-int compressor_list[] = {0,EOL};
+int compressor_list[] = {0,1,2,3,4,EOL};
 int dataset_list[] = {3,EOL};
-int bsize_list[] = {1000, EOL};
+int bsize_list[] = {2000, EOL};
 
 
 int check(double *d0, double *d1, size_t len, double error) {
@@ -233,8 +233,6 @@ void report(int c) {
         fflush(stdout);
 }
 
-double res[7][10][32];
-
 int main() {
         // lfzip_init();
 
@@ -246,7 +244,7 @@ int main() {
         }        
 
         for (int i = 0; bsize_list[i] != EOL; i++) {
-                printf("Current block size: %d\n", bsize_list[i]);
+                printf("Current slice length: %d\n", bsize_list[i]);
                 fflush(stdout);
                 for (int j = 0; dataset_list[j] != EOL; j++) {
                         test_dataset(dataset_list[j], bsize_list[i]);
