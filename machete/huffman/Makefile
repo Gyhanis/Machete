@@ -1,6 +1,5 @@
 ifeq ($(MODE), DEBUG)
 CFLAG=-g -fsanitize=address
-# CFLAG=-g 
 else 
 CFLAG=-O3 -DNDEBUG
 endif
