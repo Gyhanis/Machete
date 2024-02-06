@@ -1,6 +1,7 @@
 #include "defs.h"
 #include <assert.h>
 #include <vector>
+#include <cstdlib>
 
 ssize_t hybrid_data_partition(int32_t* input, ssize_t len, std::vector<int32_t> &low_redundancy_data, ssize_t &rare_cnt, int32_t &rare_sym, EncodeCodebook &codebook) {
         // ------------------- rare_extraction --------------------

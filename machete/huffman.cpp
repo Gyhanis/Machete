@@ -1,6 +1,7 @@
 #include "defs.h"
 #include <queue>
 #include <stack>
+#include <cstdlib>
 
 #include "BitStream/BitReader.h"
 #include "BitStream/BitWriter.h"
