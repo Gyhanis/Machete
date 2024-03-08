@@ -59,19 +59,36 @@ ssize_t machete_compress(double* input, ssize_t len, uint8_t** output, double er
                 return sizeof(uint32_t) + data_size;
         }
 
+        if (len > INT16_MAX) {
+                printf("Warning: input length too long, don't forget to check the return value in case of errors.");
+        }
+
         int32_t *delta = reinterpret_cast<int32_t*>(malloc(sizeof(int32_t) * len));
         uint8_t *predictor_out;
         ssize_t psize;
         ssize_t dlen = predict_diff_phase<p>(input, len, delta, error, &predictor_out, &psize);
+        if (UNLIKELY(dlen < 0)) { // never triggered in current version
+                free(delta);
+                return PREDICTION_ERROR;
+        }
+
         uint8_t *encoder_out;
         ssize_t esize = encode_phase<e>(delta, dlen, &encoder_out);
         free(delta);
+        if (UNLIKELY(esize < 0)) { // never triggered in current version
+                return ENCODING_ERROR;
+        }
         ssize_t osize = sizeof(MacheteHeader) + psize + esize;
         *output = reinterpret_cast<uint8_t*>(malloc(osize));
         MacheteHeader *header = reinterpret_cast<MacheteHeader*>(*output);
         header->data_len = len;
-        header->esize = esize;
-        header->psize = psize;
+        if (UNLIKELY(esize > UINT16_MAX || psize > UINT16_MAX)) { // check for overflow
+                free(predictor_out);
+                free(encoder_out);
+                return SIZE_ERROR;
+        }
+        header->esize = static_cast<uint16_t>(esize);
+        header->psize = static_cast<uint16_t>(psize);
         __builtin_memcpy(header->payload, predictor_out, psize);
         __builtin_memcpy(header->payload+psize, encoder_out, esize);
         free(predictor_out);

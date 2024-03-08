@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <unistd.h>
+#include "mach_errors.h"
 
 union DOUBLE {
         double d;

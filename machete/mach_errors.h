@@ -1,0 +1,4 @@
+
+#define PREDICTION_ERROR -100
+#define ENCODING_ERROR -200
+#define SIZE_ERROR -300
